@@ -8,7 +8,7 @@ export default function useMouse(): MouseInput | undefined {
         inputManager.initialize();
 
         const cb = (mouse: MouseInput) => {
-            setLastInputed(mouse);
+            setLastInputed({ ...mouse });
         };
 
         inputManager.on("mouse", cb);

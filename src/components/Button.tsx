@@ -1,6 +1,6 @@
-import { ViewStyle } from "@/render/styles.js";
+import { ViewStyle } from "../render/styles.js";
 import View, { ViewRef } from "./View.js";
-import useMouse from "@/hooks/useMouse.js";
+import useMouse from "../hooks/useMouse.js";
 import { useEffect, useRef, useState } from "react";
 import Text from "./Text.js";
 
@@ -22,9 +22,11 @@ export default function Button(props: Props) {
     const [currentStyle, setCurrentStyle] = useState(props.style ?? INITIAL_STYLE);
     const mouse = useMouse();
     const ref = useRef<ViewRef>(null);
+    const [count, setCount] = useState(0);
 
     useEffect(() => {
         if (!mouse || !ref.current) return;
+        setCount(v => v + 1);
 
         const hovering =
             ref.current.x <= mouse.x &&
@@ -63,6 +65,6 @@ export default function Button(props: Props) {
     }, [mouse]);
 
     return <View style={currentStyle} ref={ref}>
-        <Text>{label}</Text>
+        <Text>{count} {label}</Text>
     </View>;
 }

@@ -9,7 +9,7 @@ export default function useInput(): PressedKey | undefined {
         inputManager.initialize();
 
         const cb = (key: PressedKey) => {
-            setLastInputed(key);
+            setLastInputed({ ...key });
         };
 
         inputManager.on("keypress", cb);

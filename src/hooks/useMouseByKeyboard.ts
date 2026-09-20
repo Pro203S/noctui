@@ -1,73 +1,122 @@
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useRef } from "react";
 import useCursor from "./useCursor.js";
-import useInput from "./useInput.js";
-import inputManager from "../modules/inputMgr.js";
+import inputManager, { type PressedKey } from "../modules/inputMgr.js";
 
 type Props = {
-    "initialStatus"?: boolean;
-}
+    initialStatus?: boolean;
+};
 
 export default function useMouseByKeyboard(props?: Props) {
-    const { initialStatus } = props ?? {};
-    const [enabled, setEnabled] = useState(initialStatus ?? false);
-    const cursor = useCursor();
-    const input = useInput();
+    const enabledRef = useRef(props?.initialStatus ?? false);
 
-    const [mouseX, setMouseX] = useState(1);
-    const [mouseY, setMouseY] = useState(1);
+    const mouseXRef = useRef(1);
+    const mouseYRef = useRef(1);
 
-    const [shifted, setShifted] = useState(false);
-
-    useEffect(() => {
-        if (!enabled) {
-            cursor.setShow(false);
-            return;
-        }
-
-        cursor.setShow(true);
-
-        if (!input) return;
-
-        const move = input.shift ? 2 : 1;
-        setShifted(input.shift);
-
-        if (input.name === "up") {
-            setMouseY(v => Math.max(1, v - move));
-            return;
-        }
-
-        if (input.name === "down") {
-            setMouseY(v => v + move);
-            return;
-        }
-
-        if (input.name === "right") {
-            setMouseX(v => v + move);
-            return;
-        }
-
-        if (input.name === "left") {
-            setMouseX(v => Math.max(1, v - move));
-            return;
-        }
-    }, [enabled, input]);
+    const {
+        setShow,
+        setX,
+        setY,
+    } = useCursor();
 
     useEffect(() => {
-        if (!enabled) return;
+        inputManager.initialize();
 
-        cursor.setX(mouseX);
-        cursor.setY(mouseY);
+        setShow(enabledRef.current);
 
-        inputManager.emitMouse({
-            "x": mouseX - 1,
-            "y": mouseY - 1,
-            "button": "none",
-            "action": "move",
-            "shift": shifted,
-            "ctrl": false,
-            "alt": false,
-        });
-    }, [mouseX, mouseY, enabled]);
+        if (enabledRef.current) {
+            setX(mouseXRef.current);
+            setY(mouseYRef.current);
+        }
 
-    return (enable: boolean) => setEnabled(enable);
+        const onKeypress = (input: PressedKey) => {
+            if (!enabledRef.current) return;
+
+            if (input.action === "release") {
+                if (input.name !== "space") {
+                    return;
+                }
+            }
+
+            const move = input.shift ? 2 : 1;
+
+            let x = mouseXRef.current;
+            let y = mouseYRef.current;
+            let moved = false;
+
+            switch (input.name) {
+                case "up":
+                    y = Math.max(1, y - move);
+                    moved = true;
+                    break;
+
+                case "down":
+                    y += move;
+                    moved = true;
+                    break;
+
+                case "left":
+                    x = Math.max(1, x - move);
+                    moved = true;
+                    break;
+
+                case "right":
+                    x += move;
+                    moved = true;
+                    break;
+
+                case "space": {
+                    if (input.action === "repeat") {
+                        return;
+                    }
+
+                    inputManager.emitMouse({
+                        x: x - 1,
+                        y: y - 1,
+                        button: "left",
+                        action: input.action,
+                        shift: input.shift,
+                        ctrl: input.ctrl,
+                        alt: input.alt,
+                    });
+
+                    return;
+                }
+            }
+
+            if (!moved) return;
+
+            mouseXRef.current = x;
+            mouseYRef.current = y;
+
+            setX(x);
+            setY(y);
+
+            inputManager.emitMouse({
+                "x": x - 1,
+                "y": y - 1,
+                "button": "none",
+                "action": "move",
+                "shift": input.shift,
+                "ctrl": input.ctrl,
+                "alt": input.alt,
+            });
+        };
+
+        inputManager.on("keypress", onKeypress);
+
+        return () => {
+            inputManager.off("keypress", onKeypress);
+        };
+    }, [setShow, setX, setY]);
+
+    return useCallback((enable: boolean) => {
+        enabledRef.current = enable;
+
+        setShow(enable);
+
+        if (enable) {
+            setX(mouseXRef.current);
+            setY(mouseYRef.current);
+        }
+    }, [setShow, setX, setY]);
 }
