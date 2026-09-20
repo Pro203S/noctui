@@ -1,16 +1,23 @@
 import { Button, Text, useInput, useMouse, useMouseByKeyboard, View } from "noctui";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function App() {
-    const mouseByKeyboard = useMouseByKeyboard({ "initialStatus": true });
+    const keyboard = useMouseByKeyboard();
     const input = useInput();
     const mouse = useMouse();
     const [count, setCount] = useState(0);
 
+    useEffect(() => {
+        if (!input) return;
+
+        if (input.shift && input.name === "tab" && input.action === "press") {
+            keyboard.toggle();
+        }
+    }, [input]);
+
     return <View>
-        <Button label="pressme" onClick={() => setCount(v => v + 1)}/>
-        <Text>{JSON.stringify(input, null, 4)}</Text>
-        <Text>{JSON.stringify(mouse, null, 4)}</Text>
+        <Button label="pressme" onClick={() => setCount(v => v + 1)} />
+        <Text>{JSON.stringify(input)}</Text>
         <Text>{count}</Text>
     </View>;
 }

@@ -38,7 +38,7 @@ const KITTY_KEYBOARD_FLAGS = 2 | 8;
 
 // Legacy terminals do not send key-up events.
 // A release is synthesized after input for the same key stops arriving.
-const LEGACY_INITIAL_RELEASE_DELAY_MS = 650;
+const LEGACY_INITIAL_RELEASE_DELAY_MS = 250;
 const LEGACY_MIN_REPEAT_RELEASE_DELAY_MS = 60;
 const LEGACY_MAX_REPEAT_RELEASE_DELAY_MS = 180;
 
