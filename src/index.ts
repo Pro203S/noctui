@@ -22,10 +22,16 @@ export {
 
 import { type ViewRef } from "./components/View.js";
 import { type TextRef } from "./components/Text.js";
+import {
+    type InputProps,
+    type InputRef,
+} from "./components/Input.js";
 
 export {
     type ViewRef,
     type TextRef,
+    type InputProps,
+    type InputRef,
 };
 
 // hooks

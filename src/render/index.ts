@@ -6,6 +6,7 @@ import {
     type NoctUIContainer,
 } from "./reconciler/index.js";
 import CliManager from "../modules/cliMgr.js";
+import inputManager from "../modules/inputMgr.js";
 
 type ReconcilerRoot = ReturnType<typeof reconciler.createContainer>;
 
@@ -108,12 +109,16 @@ export default class Renderer {
             this.#isUnmounted = true;
 
             try {
-                this.#cliManager.restore();
+                inputManager.restore();
             } finally {
-                this.#stop();
+                try {
+                    this.#cliManager.restore();
+                } finally {
+                    this.#stop();
 
-                if (this.#ownsTerminal) {
-                    hasActiveTerminalRenderer = false;
+                    if (this.#ownsTerminal) {
+                        hasActiveTerminalRenderer = false;
+                    }
                 }
             }
         }
@@ -146,6 +151,7 @@ export default class Renderer {
 
         this.#isStarted = false;
 
+        process.stdin.off("data", this.#handleInput);
         process.removeListener("SIGINT", this.#handleSigint);
         process.stdin.pause();
     }

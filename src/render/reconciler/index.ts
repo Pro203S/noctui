@@ -10,6 +10,7 @@ import type { NoctUIText } from "./components/Text.js";
 import type { TextRef } from "../../components/Text.js";
 import type { ViewRef } from "../../components/View.js";
 import type { NoctUIView } from "./components/View.js";
+import { refreshActiveCursor } from "../../modules/cursorMgr.js";
 
 export type HostProps = Readonly<Record<string, unknown>>;
 
@@ -110,6 +111,11 @@ function redraw(container: NoctUIContainer): void {
     let nextText = renderLayoutChildren(container.children);
 
     if (nextText === container.renderedText) {
+        if (process.stdout.isTTY === true) {
+            process.stdout.write("\x1b[u");
+        }
+
+        refreshActiveCursor();
         return;
     }
 
@@ -119,6 +125,7 @@ function redraw(container: NoctUIContainer): void {
         }
 
         container.renderedText = nextText;
+        refreshActiveCursor();
         return;
     }
 
@@ -140,6 +147,7 @@ function redraw(container: NoctUIContainer): void {
     container.renderedText = nextText;
 
     process.stdout.write("\x1b[u");
+    refreshActiveCursor();
 }
 
 const hostConfig: HostConfig = {

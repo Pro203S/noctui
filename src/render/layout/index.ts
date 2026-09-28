@@ -167,5 +167,9 @@ export function renderLayoutChildren(
         children: children.map(createLayoutChild),
     });
 
+    for (const child of children) {
+        resolveAbsoluteLayout(child);
+    }
+
     return serializeGrid(root.grid);
 }

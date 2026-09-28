@@ -414,6 +414,8 @@ function paintRecords(
     records: readonly PaintRecord[],
     width: number,
     height: number,
+    layoutOffsetX = 0,
+    layoutOffsetY = 0,
 ) {
     const grid = createGrid(width, height);
     const paintOrder = [...records].sort((left, right) => (
@@ -424,8 +426,8 @@ function paintRecords(
     for (const record of paintOrder) {
         const { x, y } = getPaintCoordinates(record, width, height);
         record.child.setLayout({
-            x,
-            y,
+            x: x + layoutOffsetX,
+            y: y + layoutOffsetY,
             width: record.result.grid.width,
             height: record.result.grid.height,
         });
@@ -433,6 +435,12 @@ function paintRecords(
     }
 
     return grid;
+}
+
+function hasBorder(style: Readonly<ViewStyle>): boolean {
+    return style.borderStyle !== undefined ||
+        style.borderWidth !== undefined ||
+        style.borderColor !== undefined;
 }
 
 function addPadding(
@@ -482,11 +490,7 @@ function addBorder(
     inner: ReturnType<typeof createGrid>,
     style: Readonly<ViewStyle>,
 ) {
-    const hasBorder = style.borderStyle !== undefined ||
-        style.borderWidth !== undefined ||
-        style.borderColor !== undefined;
-
-    if (!hasBorder) {
+    if (!hasBorder(style)) {
         return inner;
     }
 
@@ -571,7 +575,15 @@ export function layoutView(
             style.alignItems ?? "stretch",
         )
         : placeBlockChildren(children);
-    const content = paintRecords(records, width, height);
+    const padding = resolveSpacing(style, "padding");
+    const borderOffset = hasBorder(style) ? 1 : 0;
+    const content = paintRecords(
+        records,
+        width,
+        height,
+        padding.left + borderOffset,
+        padding.top + borderOffset,
+    );
 
     return {
         grid: addBorder(

@@ -19,10 +19,12 @@
         "clean": "tsc --build --clean",
         "dev": "tsx watch src/index.ts",
         "watch": "tsc --watch",
+        "test:input-runtime": "tsc --noCheck --rootDir src --outDir .cache/input-runtime && tsc-alias --outDir .cache/input-runtime && node --test test/runtime/input.test.mjs",
+        "test:input-types": "npm run build && tsc --ignoreConfig --noEmit --strict --target ES2022 --module Node16 --moduleResolution Node16 --types node,react test/types/input.test.ts",
         "test:path-alias": "tsc -p test/path-alias/tsconfig.json && tsc-alias -p tsconfig.json --outDir .cache/path-alias && node .cache/path-alias/test/path-alias/entry.js",
         "test:reconciler-runtime": "tsc --noCheck --rootDir src --outDir .cache/reconciler-runtime && tsc-alias --outDir .cache/reconciler-runtime && node --test test/runtime/cliMgr.test.mjs test/runtime/layout-text.test.mjs test/runtime/layout-view.test.mjs test/runtime/reconciler.test.mjs test/runtime/renderer.test.mjs",
         "test:reconciler-types": "tsc --declaration --emitDeclarationOnly --noCheck --rootDir src --outDir .cache/reconciler-types && tsc-alias --outDir .cache/reconciler-types && tsc --ignoreConfig --noEmit --strict --target ES6 --module Node16 --moduleResolution Node16 --types node test/types/reconciler.test.ts",
-        "test": "npm run pack && node \"test.js\""
+        "test": "npm run test:input-runtime && npm run test:input-types"
     },
     "repository": {
         "type": "git",
